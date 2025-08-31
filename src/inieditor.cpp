@@ -23,6 +23,9 @@ along with Ini editor plugin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDir>
 #include <QMessageBox>
 #include <QtPlugin>
+#ifdef __unix__
+#include <QDesktopServices>
+#endif
 
 #include <uibase/imoinfo.h>
 #include <uibase/iplugingame.h>
@@ -103,10 +106,14 @@ void IniEditor::display() const
   if (m_MOInfo->pluginSetting(name(), "external").toBool()) {
     for (QString const& file : iniFiles) {
       QString fileName = m_MOInfo->profile()->absoluteIniFilePath(file);
+#ifdef _WIN32
       ::ShellExecuteW(nullptr,
                       m_MOInfo->pluginSetting(name(), "associated").toBool() ? L"open"
                                                                              : L"edit",
                       ToWString(fileName).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+#else
+      QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+#endif
     }
   } else {
     TextViewer* viewer = new TextViewer("INI Files", parentWidget());
